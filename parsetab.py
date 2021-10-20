@@ -6,9 +6,9 @@ _tabversion = '3.10'
 
 _lr_method = 'LALR'
 
-_lr_signature = "rightUMINUSASSIGN FDEC FNUMBER IDEC INUMBER MINUS NAME PLUS PRINTstatement : IDEC NAMEstatement : IDEC NAME ASSIGN expressionstatement : FDEC NAMEstatement : FDEC NAME ASSIGN expressionstatement : PRINT expressionexpression : INUMBERexpression : FNUMBERstatement : NAME ASSIGN expressionexpression : expression PLUS expression\n                  | expression MINUS expressionexpression : '-' expression %prec UMINUSexpression : '(' expression ')'expression : NAME"
+_lr_signature = "rightUMINUSASSIGN FDEC FNUMBER IDEC INUMBER MINUS NAME PLUS PRINTstatement : FDEC NAME is_assignstatement : IDEC NAME is_assignis_assign : ASSIGN expression\n                | statement : PRINT expressionexpression : INUMBERexpression : FNUMBERstatement : NAME ASSIGN expressionexpression : expression PLUS expression\n                  | expression MINUS expressionexpression : '-' expression %prec UMINUSexpression : '(' expression ')'expression : NAME"
     
-_lr_action_items = {'IDEC':([0,],[2,]),'FDEC':([0,],[4,]),'PRINT':([0,],[5,]),'NAME':([0,2,4,5,7,12,13,15,17,18,19,],[3,6,8,14,14,14,14,14,14,14,14,]),'$end':([1,6,8,9,10,11,14,16,20,22,23,24,25,26,],[0,-1,-3,-5,-6,-7,-13,-8,-11,-2,-4,-9,-10,-12,]),'ASSIGN':([3,6,8,],[7,15,17,]),'INUMBER':([5,7,12,13,15,17,18,19,],[10,10,10,10,10,10,10,10,]),'FNUMBER':([5,7,12,13,15,17,18,19,],[11,11,11,11,11,11,11,11,]),'-':([5,7,12,13,15,17,18,19,],[12,12,12,12,12,12,12,12,]),'(':([5,7,12,13,15,17,18,19,],[13,13,13,13,13,13,13,13,]),'PLUS':([9,10,11,14,16,20,21,22,23,24,25,26,],[18,-6,-7,-13,18,-11,18,18,18,18,18,-12,]),'MINUS':([9,10,11,14,16,20,21,22,23,24,25,26,],[19,-6,-7,-13,19,-11,19,19,19,19,19,-12,]),')':([10,11,14,20,21,24,25,26,],[-6,-7,-13,-11,26,-9,-10,-12,]),}
+_lr_action_items = {'FDEC':([0,],[2,]),'IDEC':([0,],[4,]),'PRINT':([0,],[5,]),'NAME':([0,2,4,5,7,12,13,16,19,20,],[3,6,8,14,14,14,14,14,14,14,]),'$end':([1,6,8,9,10,11,14,15,17,18,21,23,24,25,26,],[0,-4,-4,-5,-6,-7,-13,-1,-8,-2,-11,-3,-9,-10,-12,]),'ASSIGN':([3,6,8,],[7,16,16,]),'INUMBER':([5,7,12,13,16,19,20,],[10,10,10,10,10,10,10,]),'FNUMBER':([5,7,12,13,16,19,20,],[11,11,11,11,11,11,11,]),'-':([5,7,12,13,16,19,20,],[12,12,12,12,12,12,12,]),'(':([5,7,12,13,16,19,20,],[13,13,13,13,13,13,13,]),'PLUS':([9,10,11,14,17,21,22,23,24,25,26,],[19,-6,-7,-13,19,-11,19,19,19,19,-12,]),'MINUS':([9,10,11,14,17,21,22,23,24,25,26,],[20,-6,-7,-13,20,-11,20,20,20,20,-12,]),')':([10,11,14,21,22,24,25,26,],[-6,-7,-13,-11,26,-9,-10,-12,]),}
 
 _lr_action = {}
 for _k, _v in _lr_action_items.items():
@@ -17,7 +17,7 @@ for _k, _v in _lr_action_items.items():
       _lr_action[_x][_k] = _y
 del _lr_action_items
 
-_lr_goto_items = {'statement':([0,],[1,]),'expression':([5,7,12,13,15,17,18,19,],[9,16,20,21,22,23,24,25,]),}
+_lr_goto_items = {'statement':([0,],[1,]),'expression':([5,7,12,13,16,19,20,],[9,17,21,22,23,24,25,]),'is_assign':([6,8,],[15,18,]),}
 
 _lr_goto = {}
 for _k, _v in _lr_goto_items.items():
@@ -27,17 +27,17 @@ for _k, _v in _lr_goto_items.items():
 del _lr_goto_items
 _lr_productions = [
   ("S' -> statement","S'",1,None,None,None),
-  ('statement -> IDEC NAME','statement',2,'p_statement_declare_int','lex_yacc_parser_a01229274.py',75),
-  ('statement -> IDEC NAME ASSIGN expression','statement',4,'p_statement_declare_and_assign_int','lex_yacc_parser_a01229274.py',80),
-  ('statement -> FDEC NAME','statement',2,'p_statement_declare_float','lex_yacc_parser_a01229274.py',84),
-  ('statement -> FDEC NAME ASSIGN expression','statement',4,'p_statement_declare_and_assign_float','lex_yacc_parser_a01229274.py',88),
-  ('statement -> PRINT expression','statement',2,'p_statement_print','lex_yacc_parser_a01229274.py',92),
-  ('expression -> INUMBER','expression',1,'p_expression_inumber','lex_yacc_parser_a01229274.py',100),
-  ('expression -> FNUMBER','expression',1,'p_expression_fnumber','lex_yacc_parser_a01229274.py',104),
-  ('statement -> NAME ASSIGN expression','statement',3,'p_statement_assign','lex_yacc_parser_a01229274.py',108),
-  ('expression -> expression PLUS expression','expression',3,'p_expression_binop','lex_yacc_parser_a01229274.py',117),
-  ('expression -> expression MINUS expression','expression',3,'p_expression_binop','lex_yacc_parser_a01229274.py',118),
-  ('expression -> - expression','expression',2,'p_expression_uminus','lex_yacc_parser_a01229274.py',125),
-  ('expression -> ( expression )','expression',3,'p_expression_group','lex_yacc_parser_a01229274.py',129),
-  ('expression -> NAME','expression',1,'p_expression_name','lex_yacc_parser_a01229274.py',133),
+  ('statement -> FDEC NAME is_assign','statement',3,'p_statement_declare_float','lex_yacc_parser_a01229274.py',86),
+  ('statement -> IDEC NAME is_assign','statement',3,'p_statement_declare_int','lex_yacc_parser_a01229274.py',93),
+  ('is_assign -> ASSIGN expression','is_assign',2,'p_is_assign','lex_yacc_parser_a01229274.py',103),
+  ('is_assign -> <empty>','is_assign',0,'p_is_assign','lex_yacc_parser_a01229274.py',104),
+  ('statement -> PRINT expression','statement',2,'p_statement_print','lex_yacc_parser_a01229274.py',112),
+  ('expression -> INUMBER','expression',1,'p_expression_inumber','lex_yacc_parser_a01229274.py',122),
+  ('expression -> FNUMBER','expression',1,'p_expression_fnumber','lex_yacc_parser_a01229274.py',126),
+  ('statement -> NAME ASSIGN expression','statement',3,'p_statement_assign','lex_yacc_parser_a01229274.py',130),
+  ('expression -> expression PLUS expression','expression',3,'p_expression_binop','lex_yacc_parser_a01229274.py',139),
+  ('expression -> expression MINUS expression','expression',3,'p_expression_binop','lex_yacc_parser_a01229274.py',140),
+  ('expression -> - expression','expression',2,'p_expression_uminus','lex_yacc_parser_a01229274.py',147),
+  ('expression -> ( expression )','expression',3,'p_expression_group','lex_yacc_parser_a01229274.py',151),
+  ('expression -> NAME','expression',1,'p_expression_name','lex_yacc_parser_a01229274.py',155),
 ]
