@@ -71,7 +71,7 @@ class Node:
         self.childrens = childrens
 
 # Build the lexer
-import ply.lex as lex
+import lex as lex
 lexer = lex.lex()
 
 # Parsing rules
@@ -177,7 +177,7 @@ while True:
     print(tok)
 """
 
-import ply.yacc as yacc
+import yacc as yacc
 parser = yacc.yacc()
 
 data = ''
