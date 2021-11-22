@@ -80,7 +80,7 @@ class Node:
         self.childrens = childrens
 
 # Build the lexer
-import ply.lex as lex
+import lex
 lexer = lex.lex()
 
 # Parsing rules
@@ -179,7 +179,7 @@ def p_error(p):
     else:
         print("Syntax error at EOF")
 
-import ply.yacc as yacc
+import yacc as yacc
 parser = yacc.yacc()
 
 global data
@@ -217,7 +217,8 @@ try:
             yacc.parse(s)
             line_cont += 1
     else:
-        file = open(user_args["file"], 'r')
+        file_name = user_args["file"]
+        file = open(file_name, 'r')
         lines = file.readlines()
         for line in lines:
             data += line
@@ -226,3 +227,5 @@ try:
     
 except AttributeError:
     print("Error. Please provide the correct arguments")
+except TypeError:
+    print("File name not provided")
