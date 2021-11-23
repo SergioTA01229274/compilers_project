@@ -3,6 +3,7 @@ import signal
 import argparse
 from types import DynamicClassAttribute
 
+
 def arg_parser():
     parser = argparse.ArgumentParser(description= "YACC parcer for the ac language.")
     parser.add_argument("-f", "--file", nargs="?", help="AC program file input")
@@ -10,83 +11,9 @@ def arg_parser():
     var_args = vars(parser.parse_args())
     return var_args
 
-tokens = (
-    'NAME', 'INUMBER','FNUMBER', 'PLUS', 'MINUS', 'ASSIGN', 'PRINT', 'IDEC', 'FDEC'
-)
 
-def t_PLUS(t):
-    r'\+'
-    t.value = str(t.value)
-    return t
-
-def t_MINUS(t):
-    r'\-'
-    t.value = str(t.value)
-    return t
-
-def t_ASSIGN(t):
-    r'\='
-    t.value = str(t.value)
-    return t
-
-def t_IDEC(t):
-    r'int'
-    t.value = str(t.value)
-    return t
-
-def t_FDEC(t):
-    r'float'
-    t.value = str(t.value)
-    return t
-
-def t_PRINT(t):
-    r'print'
-    t.value = str(t.value)
-    return t
-
-def t_NAME(t):
-    r'[a-z]'
-    t.value = str(t.value)
-    return t
-
-def t_FNUMBER(t):
-    r'\d+\.\d+'
-    t.value = float(t.value)
-    return t
-
-def t_INUMBER(t):
-    r'\d+'
-    t.value = int(t.value)
-    return t
-
-def t_newline(t):
-    r'\n+'
-    t.lexer.lineno += t.value.count("\n")
-
-def t_error(t):
-    if str(t.value[0]) == ' ' or str(t.value[0]) == '\t':
-        t.lexer.skip(1)
-    else:
-        print("Illegal character '%s'" % t.value[0])
-        t.lexer.skip(1)
-
-class Node:
-    val = ''
-    type = ''
-    childrens = []
-    def __init__(self, val, type, childrens=[]):
-        self.val = val
-        self.type = type
-        self.childrens = childrens
 
 # Build the lexer
-import lex
-lexer = lex.lex()
-
-# Parsing rules
-precedence = (    
-    ('right', 'UMINUS'),
-)
 names = {}
 abstract_tree = []
 
@@ -179,8 +106,7 @@ def p_error(p):
     else:
         print("Syntax error at EOF")
 
-import yacc as yacc
-parser = yacc.yacc()
+
 
 global data
 data = ''
@@ -227,5 +153,3 @@ try:
     
 except AttributeError:
     print("Error. Please provide the correct arguments")
-except TypeError:
-    print("File name not provided")
