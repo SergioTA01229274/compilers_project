@@ -30,7 +30,8 @@ class Node:
 
 def setParentOfChildren(node):
     for child in node.children:
-        child.parent = node
+        if isinstance(child, Node):
+            child.parent = node
 
 def hasGreaterPrecedence(a, b): # This function compares wheter a has greater precedence than b
     if a in '^':
@@ -48,7 +49,7 @@ def treeFromInfix(tmp_tree):
     stack = []
     res = []
     while tmp_tree:
-        e = tmp_tree.pop(0)
+        e = tmp_tree.pop()
         if e == '(':
             stack.append(e)
         elif e == ')':
@@ -134,6 +135,15 @@ def p_flowctlr(p):
         p[0] = Node('if', children=children)
         setParentOfChildren(p[0])
 
+def p_flowctlr_while(p):
+    '''
+    flowctlr : WHILE '(' boolexpr ')' '{' block '}'
+    '''
+    if len(p) > 2:
+        children = [p[3], p[6]] # Here we insert boolexpr and block since the other literals are useless
+        p[0] = Node('while', children=children)
+        setParentOfChildren(p[0])
+
 def p_elif(p):
     '''
     elif : ELIF '(' boolexpr ')' '{' block '}' elif 
@@ -167,11 +177,11 @@ def p_simplestmt_assign_num(p):
     p[0] = Node('assignment', [d, treeFromInfix(p[4])])
     setParentOfChildren(p[0])
 
-def p_simplestmt_assign_expr(p):
+def p_simplestmt_assign_expr(p): # Found a bug in this declarations
     '''
-    simplestmt : NAME '=' expr
+    simplestmt : NAME '=' numexpr
     '''
-    p[0] = Node('assignment', [Node(p[1]), Node(p[3])])
+    p[0] = Node('assignment', [Node(p[1]), treeFromInfix(p[3])])
     setParentOfChildren(p[0])
 
 
@@ -304,10 +314,13 @@ def p_error(p):
         print("Syntax error at EOF")
 
 def printChildren(node, level=0):
-    print((' ' * level) + node.type)
-    if node.children:
-        for child in node.children:
-            printChildren(child, level + 1)
+    if isinstance(node, str):
+        print((' ' * level) + node)
+    else:
+        print((' ' * level) + str(node.type))
+        if node.children:
+            for child in node.children:
+                printChildren(child, level + 1)
 
 
 parser = yacc.yacc()
@@ -326,6 +339,5 @@ if __name__ == '__main__':
 
     except OSError:
         print("Error when trying to read the file. Check if file is present.") 
-    except AttributeError:
-        print("Error. Please provide the correct arguments")
+    
     

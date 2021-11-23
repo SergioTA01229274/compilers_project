@@ -2,6 +2,7 @@ from ply import lex
 
 reserved = {'and': 'AND', 
             'or':'OR',
+            'while':'WHILE',
             'if':'IF',
             'elif':'ELIF',
             'else':'ELSE',
@@ -55,6 +56,11 @@ def t_AND(t):
 
 def t_OR(t):
     r'or'
+    t.value = str(t.value)
+    return t
+
+def t_WHILE(t):
+    r'while'
     t.value = str(t.value)
     return t
 
