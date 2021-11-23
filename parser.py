@@ -167,15 +167,6 @@ def p_simplestmt_assign_num(p):
     p[0] = Node('assignment', [d, treeFromInfix(p[4])])
     setParentOfChildren(p[0])
 
-def p_simplestmt_assign_bool(p):
-    '''
-    simplestmt : BOOLEAN NAME '=' expr
-    '''
-    d = Node('declaration', [Node(p[2]), Node(p[1])])
-    setParentOfChildren(d)
-    p[0] = Node('assignment', [d, treeFromInfix(p[4])])
-    setParentOfChildren(p[0])
-
 def p_simplestmt_assign_expr(p):
     '''
     simplestmt : NAME '=' expr
@@ -231,12 +222,6 @@ def p_neg_num(p):
         | '-' FNUMBER 
         | '-' NAME
     '''
-
-def p_expr_boolexpr(p):
-    '''
-    expr : boolexpr
-    '''
-    p[0] = p[1]
 
 def p_expr_bool_bin(p):
     '''
@@ -334,6 +319,7 @@ if __name__ == '__main__':
             with open(user_args['file'], 'r') as file:
                 file_content = file.read()
                 root = parser.parse(lexer=lexer.lexer_obj, input=file_content)
+                
                 if root == None:
                     sys.exit("Syntax error.")
                 printChildren(root)

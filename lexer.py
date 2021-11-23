@@ -5,7 +5,6 @@ reserved = {'and': 'AND',
             'if':'IF',
             'elif':'ELIF',
             'else':'ELSE',
-            'boolean':'BOOLEAN',
             'true':'TRUE',
             'false':'FALSE',
             'print':'PRINT'
@@ -71,11 +70,6 @@ def t_ELIF(t):
 
 def t_ELSE(t):
     r'else'
-    t.value = str(t.value)
-    return t
-
-def t_BOOLEAN(t):
-    r'boolean'
     t.value = str(t.value)
     return t
 
