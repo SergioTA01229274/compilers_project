@@ -3,6 +3,7 @@ from ply import lex
 reserved = {'and': 'AND', 
             'or':'OR',
             'while':'WHILE',
+            'for':'FOR',
             'if':'IF',
             'elif':'ELIF',
             'else':'ELSE',
@@ -12,7 +13,7 @@ reserved = {'and': 'AND',
 }
 
 tokens = list(reserved.values()) + [
-    'NAME', 'INUMBER','FNUMBER', 'IDEC', 'FDEC', 'EQUALS', 'NOTEQUALS', 'GRTOEQTHAN', 'LESSOEQTHAN'
+    'NAME', 'INUMBER','FNUMBER', 'IDEC', 'FDEC', 'EQUALS', 'NOTEQUALS', 'GRTOEQTHAN', 'LESSOEQTHAN', 'PLUSITER', 'MINUSITER'
 ]
 
 literals = ['-', '+', '*', '^', '/', '=', '>', '<', '(', ')', '{', '}', ';']
@@ -20,6 +21,8 @@ t_EQUALS = r'=='
 t_NOTEQUALS = r'!='
 t_GRTOEQTHAN = r'>='
 t_LESSOEQTHAN = r'<='
+t_PLUSITER = r'\+\+'
+t_MINUSITER = r'\-\-'
 t_INUMBER = r'\d+'
 t_FNUMBER = r'\d+\.\d+'
 
@@ -61,6 +64,11 @@ def t_OR(t):
 
 def t_WHILE(t):
     r'while'
+    t.value = str(t.value)
+    return t
+
+def t_FOR(t):
+    r'for'
     t.value = str(t.value)
     return t
 

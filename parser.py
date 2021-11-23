@@ -135,6 +135,15 @@ def p_flowctlr(p):
         p[0] = Node('if', children=children)
         setParentOfChildren(p[0])
 
+def p_flowctlr_for(p):
+    '''
+    flowctlr : FOR '(' simplestmt ';' boolexpr ';' simplestmt ')' '{' block '}'
+    '''
+    if len(p) > 6:
+        children = [p[3], p[5], p[7], p[10]] 
+        p[0] = Node('for', children=children)
+        setParentOfChildren(p[0])
+
 def p_flowctlr_while(p):
     '''
     flowctlr : WHILE '(' boolexpr ')' '{' block '}'
@@ -167,6 +176,22 @@ def p_else(p):
         p[0] = elseNode
         setParentOfChildren(p[0])
 
+def p_simplestmt_iter(p):
+    '''
+    simplestmt : NAME PLUSITER
+                | NAME MINUSITER
+    '''
+    p[0] = Node('iter', [p[1], p[2]])
+    setParentOfChildren(p[0])
+
+def p_simplestmt_assign_non_dec(p):
+    '''
+    simplestmt : IDEC NAME 
+                | FDEC NAME
+    '''
+    p[0] = Node('declaration', [p[1], p[2]])
+    setParentOfChildren(p[0])
+
 def p_simplestmt_assign_num(p):
     '''
     simplestmt : IDEC NAME '=' numexpr 
@@ -177,7 +202,7 @@ def p_simplestmt_assign_num(p):
     p[0] = Node('assignment', [d, treeFromInfix(p[4])])
     setParentOfChildren(p[0])
 
-def p_simplestmt_assign_expr(p): # Found a bug in this declarations
+def p_simplestmt_assign_expr(p):
     '''
     simplestmt : NAME '=' numexpr
     '''

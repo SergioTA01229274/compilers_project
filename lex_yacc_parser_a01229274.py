@@ -1,15 +1,5 @@
 import sys
 import signal
-import argparse
-from types import DynamicClassAttribute
-
-
-def arg_parser():
-    parser = argparse.ArgumentParser(description= "YACC parcer for the ac language.")
-    parser.add_argument("-f", "--file", nargs="?", help="AC program file input")
-    parser.add_argument("-i", "--interactive", action='store_true', help="Prompt an interactive session to parse line by line")
-    var_args = vars(parser.parse_args())
-    return var_args
 
 
 
@@ -129,27 +119,3 @@ signal.signal(signal.SIGINT, signal_handler)
 global line_cont
 line_cont = 1
 
-try:
-    user_args = arg_parser()
-    if user_args["interactive"]:
-        while True:
-            try:
-                s = input('calc > ')
-            except EOFError:
-                break
-            if not s:
-                continue 
-            data += s
-            yacc.parse(s)
-            line_cont += 1
-    else:
-        file_name = user_args["file"]
-        file = open(file_name, 'r')
-        lines = file.readlines()
-        for line in lines:
-            data += line
-            yacc.parse(line)
-            line_cont += 1
-    
-except AttributeError:
-    print("Error. Please provide the correct arguments")
