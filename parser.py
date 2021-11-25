@@ -1,8 +1,9 @@
 from ply import yacc
 import lexer
 import sys
-import argparse
 from lexer import tokens, literals, reserved
+import semantic
+import argparse
 
 
 def arg_parser():
@@ -10,7 +11,6 @@ def arg_parser():
     parser.add_argument("-f", "--file", nargs="?", help="Program file input")
     var_args = vars(parser.parse_args())
     return var_args
-
 
 class Node:
     def __init__(self, type, children=None, parent=None, ptype=None):
@@ -181,21 +181,23 @@ def p_simplestmt_iter(p):
     simplestmt : NAME PLUSITER
                 | NAME MINUSITER
     '''
-    p[0] = Node('iter', [p[1], p[2]])
+    p[0] = Node('iter', [Node(p[1]), Node(p[2])])
     setParentOfChildren(p[0])
 
 def p_simplestmt_assign_non_dec(p):
     '''
-    simplestmt : IDEC NAME 
-                | FDEC NAME
+    simplestmt : INT NAME 
+                | FLOAT NAME
+                | BOOLEAN NAME
     '''
-    p[0] = Node('declaration', [p[1], p[2]])
+    p[0] = Node('declaration', [Node(p[2]), Node(p[1])])
     setParentOfChildren(p[0])
 
 def p_simplestmt_assign_num(p):
     '''
-    simplestmt : IDEC NAME '=' numexpr 
-                | FDEC NAME '=' numexpr
+    simplestmt : INT NAME '=' numexpr 
+                | FLOAT NAME '=' numexpr
+                | BOOLEAN NAME '=' numexpr
     '''
     d = Node('declaration', [Node(p[2]), Node(p[1])])
     setParentOfChildren(d)
@@ -233,6 +235,14 @@ def p_numexpr_arith(p):
     for i in p[3]:
         p[0].append(i)
 
+def p_numexpr_parenthesis(p):
+    '''
+    numexpr : '(' numexpr ')'
+    '''
+    p[0] = []
+    for i in p[2]:
+        p[0].append(i)
+
 def p_arith(p):
     '''
     arith : '+' 
@@ -247,6 +257,8 @@ def p_num(p):
     '''
     num : INUMBER 
         | FNUMBER 
+        | TRUE
+        | FALSE
         | NAME
     '''
     p[0] = p[1]
@@ -277,7 +289,7 @@ def p_expr_bool_num_name(p):
             | NAME '<' numexpr
             | NAME '>' numexpr
     '''
-    p[0] = Node(p[2], [p[1], treeFromInfix(p[3])])
+    p[0] = Node(p[2], [Node(p[1]), treeFromInfix(p[3])])
     setParentOfChildren(p[0])
 
 def p_expr_bool_parenthesis(p):
@@ -333,36 +345,31 @@ def p_lambda(p):
 
 def p_error(p):
     if p:
-        print(p)
-        print("Syntax error at '%s'" % p.value)
+        sys.exit(f'[!] Syntax error at line {p.lineno}. Cause of the problem is \'{p.value}\'')
     else:
-        print("Syntax error at EOF")
+        sys.exit("Syntax error at EOF")
 
 def printChildren(node, level=0):
-    if isinstance(node, str):
-        print((' ' * level) + node)
-    else:
-        print((' ' * level) + str(node.type))
-        if node.children:
-            for child in node.children:
-                printChildren(child, level + 1)
+    print((' ' * level) + str(node.type))
+    if node.children:
+        for child in node.children:
+            printChildren(child, level + 1)
 
-
-parser = yacc.yacc()
+parser_obj = yacc.yacc()
 
 if __name__ == '__main__':
     try:
         user_args = arg_parser()
         if user_args["file"]:
-            with open(user_args['file'], 'r') as file:
+            with open('test.txt', 'r') as file:
                 file_content = file.read()
-                root = parser.parse(lexer=lexer.lexer_obj, input=file_content)
-                
+                root = parser_obj.parse(lexer=lexer.lexer_obj, input=file_content)
                 if root == None:
-                    sys.exit("Syntax error.")
+                    sys.exit("Syntax error. No content on file !")
                 printChildren(root)
+                semantic.setVariables(root)
+                semantic.semanticAnalysis(root, 1)
 
     except OSError:
         print("Error when trying to read the file. Check if file is present.") 
-    
-    
+

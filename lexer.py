@@ -1,3 +1,4 @@
+import sys
 from ply import lex
 
 reserved = {'and': 'AND', 
@@ -13,7 +14,7 @@ reserved = {'and': 'AND',
 }
 
 tokens = list(reserved.values()) + [
-    'NAME', 'INUMBER','FNUMBER', 'IDEC', 'FDEC', 'EQUALS', 'NOTEQUALS', 'GRTOEQTHAN', 'LESSOEQTHAN', 'PLUSITER', 'MINUSITER'
+    'NAME', 'INUMBER','FNUMBER', 'BOOLEAN','INT', 'FLOAT', 'EQUALS', 'NOTEQUALS', 'GRTOEQTHAN', 'LESSOEQTHAN', 'PLUSITER', 'MINUSITER'
 ]
 
 literals = ['-', '+', '*', '^', '/', '=', '>', '<', '(', ')', '{', '}', ';']
@@ -34,16 +35,21 @@ def t_error(t):
     if str(t.value[0]) == ' ' or str(t.value[0]) == '\t':
         t.lexer.skip(1)
     else:
-        print("Illegal character '%s'" % t.value[0])
+        sys.exit(f'[!] ERROR: Illegal character {t.value[0]}')
         t.lexer.skip(1)
 
-def t_IDEC(t):
+def t_INT(t):
     r'int'
     t.value = str(t.value)
     return t
 
-def t_FDEC(t):
+def t_FLOAT(t):
     r'float'
+    t.value = str(t.value)
+    return t
+
+def t_BOOLEAN(t):
+    r'boolean'
     t.value = str(t.value)
     return t
 
