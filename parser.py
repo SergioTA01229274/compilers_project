@@ -5,6 +5,13 @@ from lexer import tokens, literals, reserved
 import semantic
 import argparse
 
+tNodes = {}
+lNodes = {}
+res_3AC = ''
+
+tCounter = 1
+lCounter = 1
+
 
 def arg_parser():
     parser = argparse.ArgumentParser(description= "YACC parcer")
@@ -355,6 +362,157 @@ def printChildren(node, level=0):
         for child in node.children:
             printChildren(child, level + 1)
 
+def generateTAC(node):
+    global tCounter
+    global lCounter
+    global res_3AC
+    
+    if node.type in ["block"]:
+        for child in node.children:
+            generateTAC(child)
+    elif node.type == "declaration":
+        child_type = node.children[1].type
+        res_3AC += f'{child_type} decl({node.children[0].type})\n' 
+        tNodes[node]=node.children[0].type
+    elif node.type == "assignment":
+        generateTAC(node.children[0])
+        generateTAC(node.children[1])
+        res_3AC += f'{tNodes[node.children[0]]} := {tNodes[node.children[1]]}\n' 
+    elif node.type == "intToFloat":
+        generateTAC(node.children[0])
+        res_3AC += f't{str(tCounter)} := {node.type}({tNodes[node.children[0]]})\n'
+        tNodes[node]=f't{str(tCounter)}'
+        tCounter+=1
+    elif node.type in ["+","-","/","*","^"]:
+        generateTAC(node.children[0]) # Recursion is applied in case the children are more arithmetic expresions
+        generateTAC(node.children[1])
+        res_3AC += f't{str(tCounter)} := {tNodes[node.children[1]]} {node.type} {tNodes[node.children[0]]}\n'
+        tNodes[node]=f't{str(tCounter)}'
+        tCounter+=1
+    elif node.type in ['iter']:
+        generateTAC(node.children[0])
+        res_3AC += f't{str(tCounter)} := {tNodes[node.children[0]]} {node.children[1].type[0]} 1\n'
+        res_3AC += f'{tNodes[node.children[0]]} := t{str(tCounter)}\n'
+
+        tNodes[node.children[0]]=f't{str(tCounter)}'
+        tCounter+=1
+    elif node.type == 'else':
+        for child in node.children:
+            generateTAC(child)
+        res_3AC += f'goto L{lNodes[node.parent]}\n'
+    elif node.type in ["!=","==","<",">","<=",">="]:
+        generateTAC(node.children[0]) # Recursion is applied in case the children are logical comparisson operators: and, or
+        generateTAC(node.children[1])
+        res_3AC += f'({tNodes[node.children[0]]} {node.type} {tNodes[node.children[1]]}) IFGOTO L{str(lCounter)}\n'
+        res_3AC += f't{str(tCounter)} := false\n'
+        if node.parent.type == 'for':
+            res_3AC += f'goto L{str(lCounter+2)}\n'
+        else:
+            res_3AC += f'goto L{str(lCounter+1)}\n'
+        res_3AC += f'\nL{str(lCounter)}\n'
+        res_3AC += f't{str(tCounter)} := true\n'
+        res_3AC += f'goto L{str(lCounter+2)}\n'
+        if node.parent.type != 'for':
+            res_3AC += f'\nL{str(lCounter+1)}\n'
+        
+        tNodes[node]=f't{str(tCounter)}'
+        tCounter+=1
+        lCounter+=2
+    elif node.type == "and":
+        generateTAC(node.children[0])
+        generateTAC(node.children[1])
+        res_3AC += f'({tNodes[node.children[0]]}) IFGOTO L{str(lCounter)}\n'
+        res_3AC += f't{str(tCounter)} := false\n'
+        res_3AC += f'goto L{str(lCounter+2)}\n'
+        res_3AC += f'\nL{str(lCounter)}\n'
+        res_3AC += f'{tNodes[node.children[1]]}) IFGOTO L{str(lCounter+1)}\n'
+        res_3AC += f't{str(tCounter)} := false\n'
+        res_3AC += f'goto L{str(lCounter+2)}\n'
+        res_3AC += f'\nL{str(lCounter+1)}\n'
+        res_3AC += f't{str(tCounter)} := true\n'
+        res_3AC += f'\nL{str(lCounter+2)}\n'
+        tNodes[node]=f't{str(tCounter)}'
+        tCounter+=1
+        lCounter+=3
+    elif node.type == "or":
+        generateTAC(node.children[0])
+        generateTAC(node.children[1])
+        res_3AC += f'{tNodes[node.children[0]]}) IFGOTO L{str(lCounter)}\n'
+        res_3AC += f'{tNodes[node.children[1]]}) IFGOTO L{str(lCounter)}\n'
+        res_3AC += f't{str(tCounter)} := false\n'
+        res_3AC += f'goto L{str(lCounter+1)}\n'
+        res_3AC += f'\nL{str(lCounter)}\n'
+        res_3AC += f't{str(tCounter)} := true\n'
+        res_3AC += f'\nL{str(lCounter+1)}\n'
+        tNodes[node]=f't{str(tCounter)}'
+        tCounter+=1
+        lCounter+=2
+    elif node.type == 'print':
+        generateTAC(node.children[0])
+        res_3AC += f'print({tNodes[node.children[0]]})\n'
+    elif node.type in ["if","elif"]:
+        generateTAC(node.children[0])
+        res_3AC += f'{tNodes[node.children[0]]}) IFGOTO L{str(lCounter)}\n'
+        res_3AC += f'goto L{str(lCounter+1)}\n'
+        res_3AC += f'\nL{str(lCounter)}\n'
+        saveLCount = lCounter
+        lCounter+=2
+        generateTAC(node.children[1])
+        saveLCount2=lCounter
+        if node.type == "if":
+            res_3AC += f'goto L{str(lCounter)}\n'
+            lNodes[node] = str(lCounter)
+            lCounter+=1
+        else:
+            lNodes[node]=lNodes[node.parent]
+            res_3AC += f'goto L{lNodes[node.parent]}\n'
+        res_3AC += f'\nL{str(saveLCount+1)}\n'
+        if len(node.children) == 4:
+            generateTAC(node.children[3])
+        if len(node.children) > 2:
+            generateTAC(node.children[2])
+            
+        if node.type == "if":
+            res_3AC += f'\nL{str(saveLCount2)}\n'
+    elif node.type == "while":
+        generateTAC(node.children[0])
+        res_3AC += f'\nL{str(lCounter)}'
+        res_3AC += f'({tNodes[node.children[0]]}) IFGOTO L{str(lCounter+1)}'
+        res_3AC += f'goto L{str(lCounter+2)}'
+        res_3AC += f'\n while L{str(lCounter+1)}'
+        saveLCount=lCounter
+        lCounter+=3
+        generateTAC(node.children[1])
+        res_3AC += f'goto L{str(saveLCount)}'
+        res_3AC += f'\nL{str(saveLCount+2)}'
+    elif node.type == "for":
+        res_3AC += f'\n\'FOR\' L{str(lCounter)}\n'
+        generateTAC(node.children[0])
+        lCounter += 1
+        res_3AC += f'goto L{str(lCounter+1)}\n'
+        saveLCount=lCounter
+        res_3AC += f'\n\'FOR\' L{str(lCounter + 1)}\n'
+        generateTAC(node.children[1])
+        res_3AC += f'\n\'FOR\' L{str(lCounter)}\n'
+        res_3AC += f'({tNodes[node.children[1]]}) IFGOTO L{str(lCounter + 1)}\n'
+        res_3AC += f'goto L{str(lCounter+2)}\n'
+        res_3AC += f'\n\'FOR\' L{str(lCounter+1)}\n'
+        generateTAC(node.children[2])
+        generateTAC(node.children[3])
+        res_3AC += f'goto L{str(saveLCount + 1)}\n'
+        
+        res_3AC += f'\nL{str(lCounter+2)}\n'
+        saveLCount2=lCounter
+        lCounter+=4
+    
+    elif not node.children:
+        if node.type[0] == "-":
+            res_3AC += f't{str(tCounter)} := 0 - {node.type[1:]}\n'
+            tNodes[node]=f't{str(tCounter)}'
+            tCounter+=1
+        else:
+            tNodes[node]=node.type
+
 parser_obj = yacc.yacc()
 
 if __name__ == '__main__':
@@ -366,10 +524,11 @@ if __name__ == '__main__':
                 root = parser_obj.parse(lexer=lexer.lexer_obj, input=file_content)
                 if root == None:
                     sys.exit("Syntax error. No content on file !")
-                printChildren(root)
+                
                 semantic.setVariables(root)
                 semantic.semanticAnalysis(root, 1)
-
+                generateTAC(root)
+                print(res_3AC)
     except OSError:
         print("Error when trying to read the file. Check if file is present.") 
 

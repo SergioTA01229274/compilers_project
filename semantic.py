@@ -50,7 +50,7 @@ def isVarInTree(node,varName):
         for child in node.children:
             isVarInTree(child,varName)
     elif node.type==varName:
-        sys.exit('Asignación inválida')
+        sys.exit(f'[!] ERROR: Invalid assignment')
 
 def printVariables(r):
     if r.type=="declaration":
@@ -65,6 +65,7 @@ def printVariables(r):
             printVariables(child)
 
 def isWithinScope(node, varName):
+    
     if node in variables.keys() and varName in (o.value for o in variables[node]):
         return True
     if node.type=="else" or node.type=="elif":
@@ -82,7 +83,7 @@ def isWithinScope(node, varName):
 def treeNumtypeCheck(node):
     if node.children:
         if not node.type in ["+","-","/","*","^"]:
-            sys.exit('[!] ERROR: Invalid number assignment.')
+            sys.exit('[!] ERROR: Invalid number operation.')
         for child in node.children:
             treeNumtypeCheck(child)
         if node.children[0].ptype == node.children[1].ptype:

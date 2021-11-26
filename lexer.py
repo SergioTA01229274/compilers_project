@@ -36,7 +36,6 @@ def t_error(t):
         t.lexer.skip(1)
     else:
         sys.exit(f'[!] ERROR: Illegal character {t.value[0]}')
-        t.lexer.skip(1)
 
 def t_INT(t):
     r'int'

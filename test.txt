@@ -1,0 +1,24 @@
+int weigth = 100;
+float heat = 21.43;
+while(weigth > 80){
+    heat++;
+}
+print(heat);
+if (heat < 45.78){
+    int cold = 22;
+    for(int i = 0; i < 5; i++){
+        cold--;
+    }
+    print(cold);
+}else{
+    boolean flag;
+    if (weigth / 2 == 40){
+        flag = true;
+
+        int j = 5;
+        while(j > 0){
+            print(j);
+            j--;
+        }
+    }
+}
